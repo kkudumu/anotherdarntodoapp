@@ -2,6 +2,8 @@ import React from "react";
 import { StyleSheet, Text, View, Modal, TouchableOpacity } from "react-native";
 import colors from "../Colors";
 import TodoModal from "./TodoModal";
+import deleteList from "../Fire";
+import Fire from "./../Fire";
 
 export default class TodoList extends React.Component {
   state = {
@@ -33,12 +35,14 @@ export default class TodoList extends React.Component {
             <Text>List Modal</Text>
           </View>
         </Modal>
+
+        {/* Todolist card */}
         <TouchableOpacity
           style={[styles.listContainer, { backgroundColor: list.color }]}
           onPress={() => this.toggleListModal()}
+          onLongPress={() => this.props.deleteList(list)}
         >
           <Text style={styles.listTitle} numberOfLines={1}>
-            {" "}
             {list.name}
           </Text>
 

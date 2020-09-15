@@ -22,6 +22,7 @@ export default class App extends React.Component {
     lists: [],
     user: {},
     loading: true,
+    selected: {},
   };
 
   componentDidMount() {
@@ -49,7 +50,13 @@ export default class App extends React.Component {
   }
 
   renderList = (list) => {
-    return <TodoList list={list} updateList={this.updateList} />;
+    return (
+      <TodoList
+        list={list}
+        updateList={this.updateList}
+        deleteList={this.deleteList}
+      />
+    );
   };
 
   addList = (list) => {
@@ -62,6 +69,10 @@ export default class App extends React.Component {
 
   updateList = (list) => {
     firebase.updateList(list);
+  };
+
+  deleteList = (list) => {
+    firebase.deleteList(list);
   };
 
   render() {
@@ -104,9 +115,9 @@ export default class App extends React.Component {
           >
             <AntDesign name="plus" size={16} color={colors.blue} />
           </TouchableOpacity>
-
           <Text style={styles.add}>Add List</Text>
         </View>
+
         <View style={{ height: 275, paddingLeft: 32 }}>
           <FlatList
             data={this.state.lists}

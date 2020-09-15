@@ -35,6 +35,14 @@ class Fire {
     });
   }
 
+  get ref() {
+    return firebase
+      .firestore()
+      .collection("users")
+      .doc(this.userId)
+      .collection("lists");
+  }
+
   getLists(callback) {
     let ref = this.ref.orderBy("name");
 
@@ -61,16 +69,14 @@ class Fire {
     ref.doc(list.id).update(list);
   }
 
-  get userId() {
-    return firebase.auth().currentUser.uid;
+  deleteList(list) {
+    let ref = this.ref;
+
+    ref.doc(list.id).delete();
   }
 
-  get ref() {
-    return firebase
-      .firestore()
-      .collection("users")
-      .doc(this.userId)
-      .collection("lists");
+  get userId() {
+    return firebase.auth().currentUser.uid;
   }
 
   detach() {
