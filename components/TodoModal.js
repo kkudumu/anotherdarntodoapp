@@ -19,11 +19,31 @@ import { Swipeable } from "react-native-gesture-handler";
 export default class TodoModal extends React.Component {
   state = {
     newTodo: "",
+    //ontap 0 = not tapped, 1 = tapped for pending, 2 = tapped for completed
+    onTap: 0,
   };
 
   toggleTodoCompleted = (index) => {
     let list = this.props.list;
-    list.todos[index].completed = !list.todos[index].completed;
+
+    if (list.todos[index].onTap === 0) {
+      list.todos[index].onTap++;
+      this.setState({ onTap: 1 });
+      list.todos[index].isPending = !list.todos[index].isPending;
+    } else if (this.state.onTap === 1) {
+      list.todos[index].onTap++;
+      this.setState({ onTap: 2 });
+      list.todos[index].isPending = false;
+      list.todos[index].completed = !list.todos[index].completed;
+    } else if (this.state.onTap === 2) {
+      list.todos[index].onTap--;
+      list.todos[index].onTap--;
+      this.setState({ onTap: 0 });
+      list.todos[index].completed = false;
+      list.todos[index].isPending = false;
+    }
+
+    console.log(this.state.onTap);
 
     this.props.updateList(list);
   };
@@ -32,7 +52,12 @@ export default class TodoModal extends React.Component {
     let list = this.props.list;
 
     if (!list.todos.some((todo) => todo.title === this.state.newTodo)) {
-      list.todos.push({ title: this.state.newTodo, completed: false });
+      list.todos.push({
+        title: this.state.newTodo,
+        isPending: false,
+        completed: false,
+        onTap: 0,
+      });
 
       this.props.updateList(list);
     }
@@ -69,7 +94,11 @@ export default class TodoModal extends React.Component {
               styles.todo,
               {
                 textDecorationLine: todo.completed ? "line-through" : "none",
-                color: todo.completed ? colors.gray : colors.black,
+                color: todo.isPending
+                  ? "#fc7303"
+                  : todo.completed
+                  ? colors.gray
+                  : colors.black,
               },
             ]}
           >
@@ -231,5 +260,8 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     width: 80,
+  },
+  isPending: {
+    color: "#fc8803",
   },
 });
