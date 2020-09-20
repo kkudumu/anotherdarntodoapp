@@ -19,8 +19,8 @@ import { Swipeable } from "react-native-gesture-handler";
 export default class TodoModal extends React.Component {
   state = {
     newTodo: "",
-    //ontap 0 = not tapped, 1 = tapped for pending, 2 = tapped for completed
     onTap: 0,
+    subTodo: "",
   };
 
   toggleTodoCompleted = (index) => {
@@ -57,6 +57,7 @@ export default class TodoModal extends React.Component {
         isPending: false,
         completed: false,
         onTap: 0,
+        subTodo: "",
       });
 
       this.props.updateList(list);
@@ -65,6 +66,18 @@ export default class TodoModal extends React.Component {
     this.setState({ newTodo: "" });
 
     Keyboard.dismiss();
+  };
+  //Working on the logic here.
+  addSubTodo = () => {
+    let list = this.props.list;
+    console.log("data");
+    // if (!list.todos.some((todo) => todo.subTodo === this.state.subTodo)) {
+    //   list.todos.push({
+    //     subTodo: this.state.subTodo,
+    //   });
+    //   this.props.updateList(list);
+    // }
+    // this.setState({ subTodo: "" });
   };
 
   deleteTodo = (index) => {
@@ -75,11 +88,19 @@ export default class TodoModal extends React.Component {
   };
 
   renderTodo = (todo, index) => {
+    const list = this.props.list;
     return (
       <Swipeable
         renderRightActions={(_, dragX) => this.rightActions(dragX, index)}
       >
-        <View style={styles.todoContainer}>
+        <View
+          style={[
+            styles.todoContainer,
+            {
+              overflow: "hidden",
+            },
+          ]}
+        >
           <TouchableOpacity onPress={() => this.toggleTodoCompleted(index)}>
             <Ionicons
               name={todo.completed ? "ios-square" : "ios-square-outline"}
@@ -105,6 +126,35 @@ export default class TodoModal extends React.Component {
             {todo.title}
           </Text>
         </View>
+
+        {/* TODO:Create styles.todoSubtitle, Indent text and add bullet point. expand with more notes. Add logic to create subtitle. Modal or text input?  */}
+
+        <View
+          style={[
+            styles.todoSubtitle,
+            {
+              borderBottomWidth: "1px",
+              borderBottomColor: list.color,
+              overflow: "hidden",
+            },
+          ]}
+        >
+          <Text
+            style={[
+              styles.todo,
+              {
+                textDecorationLine: todo.completed ? "line-through" : "none",
+                color: todo.isPending
+                  ? "#fc7303"
+                  : todo.completed
+                  ? colors.gray
+                  : colors.gray,
+              },
+            ]}
+          >
+            {`\t \u2022`}Test subtitle
+          </Text>
+        </View>
       </Swipeable>
     );
   };
@@ -123,19 +173,35 @@ export default class TodoModal extends React.Component {
     });
 
     return (
-      <TouchableOpacity onPress={() => this.deleteTodo(index)}>
-        <Animated.View style={[styles.deleteButton, { opacity: opacity }]}>
-          <Animated.Text
-            style={{
-              color: colors.white,
-              fontWeight: "800",
-              transform: [{ scale }],
-            }}
-          >
-            Delete
-          </Animated.Text>
-        </Animated.View>
-      </TouchableOpacity>
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity onPress={() => this.deleteTodo(index)}>
+          <Animated.View style={[styles.deleteButton, { opacity: opacity }]}>
+            <Animated.Text
+              style={{
+                color: colors.white,
+                fontWeight: "800",
+                transform: [{ scale }],
+              }}
+            >
+              Delete
+            </Animated.Text>
+          </Animated.View>
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={() => this.addSubTodo()}>
+          <Animated.View style={[styles.addButton, { opacity: opacity }]}>
+            <Animated.Text
+              style={{
+                color: colors.white,
+                fontWeight: "800",
+                transform: [{ scale }],
+              }}
+            >
+              Add Note
+            </Animated.Text>
+          </Animated.View>
+        </TouchableOpacity>
+      </View>
     );
   };
 
@@ -249,17 +315,36 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingLeft: 32,
   },
+  todoSubtitle: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingLeft: 32,
+  },
   todo: {
     color: colors.black,
     fontWeight: "700",
     fontSize: 16,
   },
+
   deleteButton: {
     flex: 1,
     backgroundColor: colors.red,
     justifyContent: "center",
     alignItems: "center",
     width: 80,
+  },
+  addButton: {
+    flex: 1,
+    backgroundColor: colors.blue,
+    justifyContent: "center",
+    alignItems: "center",
+    width: 80,
+  },
+  buttonContainer: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "flex-end",
   },
   isPending: {
     color: "#fc8803",
