@@ -10,17 +10,22 @@ import {
   TextInput,
   Keyboard,
   Animated,
+  Modal,
+  Dimensions,
 } from "react-native";
 import { AntDesign, Ionicons } from "@expo/vector-icons";
 import colors from "./../Colors";
-
 import { Swipeable } from "react-native-gesture-handler";
+import SubTodoModal from "./SubTodoModal";
+
+const screenWidth = Math.round(Dimensions.get("window").width);
 
 export default class TodoModal extends React.Component {
   state = {
     newTodo: "",
     onTap: 0,
     subTodo: "",
+    modalOpen: false,
   };
 
   toggleTodoCompleted = (index) => {
@@ -42,8 +47,6 @@ export default class TodoModal extends React.Component {
       list.todos[index].completed = false;
       list.todos[index].isPending = false;
     }
-
-    console.log(this.state.onTap);
 
     this.props.updateList(list);
   };
@@ -68,16 +71,21 @@ export default class TodoModal extends React.Component {
     Keyboard.dismiss();
   };
   //Working on the logic here.
-  addSubTodo = () => {
+  addSubTodo = (index) => {
     let list = this.props.list;
-    console.log("data");
-    // if (!list.todos.some((todo) => todo.subTodo === this.state.subTodo)) {
-    //   list.todos.push({
-    //     subTodo: this.state.subTodo,
-    //   });
-    //   this.props.updateList(list);
-    // }
-    // this.setState({ subTodo: "" });
+
+    this.setState({ subTodo: this.state.subTodo });
+
+    list.todos[index].subTodo = this.state.subTodo;
+    // list.todos.splice(list.todos[index].subTodo, 0, {
+    //   subTodo: this.state.subTodo,
+    // });
+    console.log(list.todos[index].title);
+    console.log(this.state.subTodo);
+    this.props.updateList(list);
+    this.setState({ subTodo: "" });
+    this.triggerSubTodoModal();
+    console.log("pressed!");
   };
 
   deleteTodo = (index) => {
@@ -85,6 +93,14 @@ export default class TodoModal extends React.Component {
     list.todos.splice(index, 1);
 
     this.props.updateList(list);
+  };
+
+  triggerSubTodoModal = () => {
+    if (this.state.modalOpen === false) {
+      this.setState({ modalOpen: true });
+    } else {
+      this.setState({ modalOpen: false });
+    }
   };
 
   renderTodo = (todo, index) => {
@@ -101,6 +117,59 @@ export default class TodoModal extends React.Component {
             },
           ]}
         >
+          {/* Add Note Modal */}
+          <Modal visible={this.state.modalOpen} animationType="slide">
+            <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
+              <SafeAreaView style={styles.container}>
+                <TouchableOpacity
+                  style={{
+                    position: "absolute",
+                    top: 64,
+                    right: 32,
+                    zIndex: 10,
+                  }}
+                  onPress={() => this.triggerSubTodoModal()}
+                >
+                  <AntDesign name="close" size={24} color={colors.black} />
+                </TouchableOpacity>
+                <Text
+                  style={{
+                    fontSize: 20,
+                    fontWeight: "bold",
+                    marginBottom: 15,
+                  }}
+                >
+                  Add a Note
+                </Text>
+                <TextInput
+                  style={{
+                    color: colors.black,
+                    borderColor: list.color,
+                    borderWidth: 2,
+                    height: 40,
+                    width: screenWidth / 1.2,
+                  }}
+                  onChangeText={(text) => this.setState({ subTodo: text })}
+                  value={this.state.subTodo}
+                />
+                {/* Add button that closes modal and pushes state to firebase for current todo, also, if X is clicked, reset state to ""*/}
+                <TouchableOpacity
+                  style={[styles.create, { backgroundColor: list.color }]}
+                  onPress={() => this.addSubTodo(index)}
+                >
+                  <Text
+                    style={{
+                      color: colors.white,
+                      fontWeight: "800",
+                    }}
+                  >
+                    Add!
+                  </Text>
+                </TouchableOpacity>
+              </SafeAreaView>
+            </KeyboardAvoidingView>
+          </Modal>
+
           <TouchableOpacity onPress={() => this.toggleTodoCompleted(index)}>
             <Ionicons
               name={todo.completed ? "ios-square" : "ios-square-outline"}
@@ -127,8 +196,6 @@ export default class TodoModal extends React.Component {
           </Text>
         </View>
 
-        {/* TODO:Create styles.todoSubtitle, Indent text and add bullet point. expand with more notes. Add logic to create subtitle. Modal or text input?  */}
-
         <View
           style={[
             styles.todoSubtitle,
@@ -152,7 +219,8 @@ export default class TodoModal extends React.Component {
               },
             ]}
           >
-            {`\t \u2022`}Test subtitle
+            {`\t \u2022`}
+            {todo.subTodo}
           </Text>
         </View>
       </Swipeable>
@@ -188,7 +256,7 @@ export default class TodoModal extends React.Component {
           </Animated.View>
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={() => this.addSubTodo()}>
+        <TouchableOpacity onPress={() => this.triggerSubTodoModal()}>
           <Animated.View style={[styles.addButton, { opacity: opacity }]}>
             <Animated.Text
               style={{
@@ -243,6 +311,7 @@ export default class TodoModal extends React.Component {
               showsVerticalScrollIndicator={false}
             />
           </View>
+
           <View style={[styles.section, styles.footer]}>
             <TextInput
               style={[styles.input, { borderColor: list.color }]}
@@ -266,6 +335,14 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  create: {
+    marginTop: 24,
+    height: 50,
+    width: screenWidth / 2,
+    borderRadius: 6,
     alignItems: "center",
     justifyContent: "center",
   },
