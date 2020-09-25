@@ -24,8 +24,9 @@ export default class TodoModal extends React.Component {
   state = {
     newTodo: "",
     onTap: 0,
-    subTodo: "",
+    newSubTodo: "",
     modalOpen: false,
+    idx: 0,
   };
 
   toggleTodoCompleted = (index) => {
@@ -71,20 +72,15 @@ export default class TodoModal extends React.Component {
     Keyboard.dismiss();
   };
   //Working on the logic here.
-  addSubTodo = (index) => {
+  addSubTodo = () => {
     let list = this.props.list;
 
-    this.setState({ subTodo: this.state.subTodo });
+    list.todos[this.state.idx].subTodo = this.state.newSubTodo;
+    console.log(list.todos[this.state.idx].subTodo);
 
-    list.todos[index].subTodo = this.state.subTodo;
-    // list.todos.splice(list.todos[index].subTodo, 0, {
-    //   subTodo: this.state.subTodo,
-    // });
-    console.log(list.todos[index].title);
-    console.log(this.state.subTodo);
     this.props.updateList(list);
     this.setState({ subTodo: "" });
-    this.triggerSubTodoModal();
+    this.setState({ modalOpen: false });
     console.log("pressed!");
   };
 
@@ -95,12 +91,20 @@ export default class TodoModal extends React.Component {
     this.props.updateList(list);
   };
 
-  triggerSubTodoModal = () => {
+  // This is where we need to add our logic to add a subtodo because index is exposed here. Maybe make state for current index and pass it on to addsubtodo
+  triggerSubTodoModal = (index) => {
     if (this.state.modalOpen === false) {
       this.setState({ modalOpen: true });
+      this.setState({ idx: index });
+      console.log("test", this.state.idx);
     } else {
       this.setState({ modalOpen: false });
     }
+
+    // this.addSubTodo(index);
+
+    console.log("triggersub", index);
+    return index;
   };
 
   renderTodo = (todo, index) => {
@@ -149,8 +153,8 @@ export default class TodoModal extends React.Component {
                     height: 40,
                     width: screenWidth / 1.2,
                   }}
-                  onChangeText={(text) => this.setState({ subTodo: text })}
-                  value={this.state.subTodo}
+                  onChangeText={(text) => this.setState({ newSubTodo: text })}
+                  value={this.state.newSubTodo}
                 />
                 {/* Add button that closes modal and pushes state to firebase for current todo, also, if X is clicked, reset state to ""*/}
                 <TouchableOpacity
@@ -256,7 +260,8 @@ export default class TodoModal extends React.Component {
           </Animated.View>
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={() => this.triggerSubTodoModal()}>
+        {/* current test - see if index works here. it does */}
+        <TouchableOpacity onPress={() => this.triggerSubTodoModal(index)}>
           <Animated.View style={[styles.addButton, { opacity: opacity }]}>
             <Animated.Text
               style={{
